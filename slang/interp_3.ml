@@ -268,10 +268,13 @@ let rec comp = function
   | Op(e1, op, e2) -> let (defs1, c1) = comp e1 in  
                       let (defs2, c2) = comp e2 in  
                           (defs1 @ defs2, c1 @ c2 @ [OPER op])
+  | Pair(Fst e, Snd e) -> comp e
   | Pair(e1, e2)   -> let (defs1, c1) = comp e1 in  
                       let (defs2, c2) = comp e2 in  
                           (defs1 @ defs2, c1 @ c2 @ [MK_PAIR]) 
+  | Fst(Pair(e1, _))     -> comp e1
   | Fst e          -> let (defs, c) = comp e in (defs, c @ [FST])
+  | Snd(Pair(_, e2))     -> comp e2
   | Snd e          -> let (defs, c) = comp e in (defs, c @ [SND])
   | Inl e          -> let (defs, c) = comp e in (defs, c @ [MK_INL])
   | Inr e          -> let (defs, c) = comp e in (defs, c @ [MK_INR])
