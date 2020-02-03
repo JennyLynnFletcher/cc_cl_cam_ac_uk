@@ -265,14 +265,15 @@ let rec comp = function
   | Boolean b      -> ([], [PUSH (BOOL b)])
   | Var x          -> ([], [LOOKUP x]) 
   | UnaryOp(op, e) -> let (defs, c) = comp e in  (defs, c @ [UNARY op])
+  | Op(Integer n1, op, Integer n2) -> ([], [PUSH (do_oper(op, INT n1, INT n2))])
+  | Op(Boolean n1, op, Boolean n2) -> ([], [PUSH (do_oper(op, BOOL n1, BOOL n2))])
   | Op(e1, op, e2) -> let (defs1, c1) = comp e1 in  
                       let (defs2, c2) = comp e2 in  
                           (defs1 @ defs2, c1 @ c2 @ [OPER op])
-  | Pair(Fst e, Snd e) -> comp e
   | Pair(e1, e2)   -> let (defs1, c1) = comp e1 in  
                       let (defs2, c2) = comp e2 in  
                           (defs1 @ defs2, c1 @ c2 @ [MK_PAIR]) 
-  | Fst(Pair(e1, _))     -> comp e1
+  | Fst(Pair(e1, _))     -> comp e1   (* only compiles e1, rather than both expressions in pair*)
   | Fst e          -> let (defs, c) = comp e in (defs, c @ [FST])
   | Snd(Pair(_, e2))     -> comp e2
   | Snd e          -> let (defs, c) = comp e in (defs, c @ [SND])
