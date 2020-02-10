@@ -331,6 +331,10 @@ let rec comp = function
                       let f = new_label () in 
                       let def = [LABEL f ; BIND x] @ c @ [SWAP; POP; RETURN] in 
                           (def @ defs, [MK_CLOSURE((f, None))])
+ | PairLambda(x, y, e) -> let (defs, c) = comp e in  
+                      let f = new_label () in 
+                      let def = [LABEL f ; BIND x ; BIND y] @ c @ [SWAP; POP; RETURN] in 
+                          (def @ defs, [MK_CLOSURE((f, None))])
 (* 
  Note that we could have 
 
@@ -366,6 +370,13 @@ let rec comp = function
                       let def = [LABEL f; BIND x] @ c1 @ [SWAP; POP; RETURN] in 
                           (def @ defs1 @ defs2, 
                            [MK_CLOSURE((f, None)); BIND f] @ c2 @ [SWAP; POP])
+ | LetFunPair(f, (x, y, e1), e2) -> 
+                      let (defs1, c1) = comp e1 in  
+                      let (defs2, c2) = comp e2 in  
+                      let def = [LABEL f; BIND x; BIND y] @ c1 @ [SWAP; POP; RETURN] in 
+                          (def @ defs1 @ defs2, 
+                           [MK_CLOSURE((f, None)); BIND f] @ c2 @ [SWAP; POP])
+ 
 let compile e = 
     let (defs, c) = comp e in 
     let result = c @               (* body of program *) 

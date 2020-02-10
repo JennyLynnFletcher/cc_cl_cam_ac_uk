@@ -19,19 +19,21 @@ type expr =
        | Inl of expr 
        | Inr of expr 
        | Case of expr * lambda * lambda 
-
        | While of expr * expr 
        | Seq of (expr list)
        | Ref of expr 
        | Deref of expr 
        | Assign of expr * expr 
-
-       | Lambda of lambda 
+       | Lambda of lambda
+       | PairLambda of pair_lambda
        | App of expr * expr
        | LetFun of var * lambda * expr
+       | LetFunPair of var * pair_lambda * expr
        | LetRecFun of var * lambda * expr
 
-and lambda = Past.var * expr 
+and lambda = Past.var * expr
+
+and pair_lambda = Past.var * Past.var * expr
 
 (* printing *) 
 val string_of_unary_oper : unary_oper -> string 

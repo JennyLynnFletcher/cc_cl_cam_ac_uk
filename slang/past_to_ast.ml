@@ -57,7 +57,6 @@ let rec translate_expr = function
          Ast.LetFun(f, translate_lambda l, translate_expr e)
     | Past.LetRecFun(_, f, l, _, e)     -> 
          Ast.LetRecFun(f, translate_lambda l, translate_expr e)
-
     | Past.Seq(_, el) -> Ast.Seq(List.map translate_expr el)
     | Past.While(_, e1, e2) -> Ast.While(translate_expr e1, translate_expr e2)
     | Past.Ref(_, e) -> Ast.Ref(translate_expr e)

@@ -24,12 +24,16 @@ type expr =
        | Ref of expr 
        | Deref of expr 
        | Assign of expr * expr 
-       | Lambda of lambda 
+       | Lambda of lambda
+       | PairLambda of pair_lambda
        | App of expr * expr
        | LetFun of var * lambda * expr
+       | LetFunPair of var * pair_lambda * expr
        | LetRecFun of var * lambda * expr
 
 and lambda = var * expr 
+
+and pair_lambda = var * var * expr
 
 
 open Format
@@ -87,6 +91,8 @@ let rec pp_expr ppf = function
                      pp_expr e fstring x1 pp_expr e1 fstring x2 pp_expr e2 
     | Lambda(x, e) -> 
          fprintf ppf "(fun %a -> %a)" fstring x pp_expr e
+    | PairLambda(x, y, e) -> 
+         fprintf ppf "(fun (%a, %a) -> %a)" fstring x fstring  y pp_expr e
     | App(e1, e2)      -> fprintf ppf "%a %a" pp_expr e1 pp_expr e2
 
     | Seq el           -> fprintf ppf "begin %a end" pp_expr_list el 
@@ -97,6 +103,9 @@ let rec pp_expr ppf = function
     | LetFun(f, (x, e1), e2)     -> 
          fprintf ppf "@[let %a(%a) =@ %a @ in %a @ end@]" 
                      fstring f fstring x  pp_expr e1 pp_expr e2
+    | LetFunPair(f, (x, y, e1), e2)     -> 
+         fprintf ppf "@[let %a(%a, %a) =@ %a @ in %a @ end@]" 
+                     fstring f fstring x fstring y pp_expr e1 pp_expr e2
     | LetRecFun(f, (x, e1), e2)  -> 
          fprintf ppf "@[letrec %a(%a) =@ %a @ in %a @ end@]" 
                      fstring f fstring x  pp_expr e1 pp_expr e2
@@ -156,6 +165,7 @@ let rec string_of_expr = function
     | Inl e            -> mk_con "Inl" [string_of_expr e] 
     | Inr e            -> mk_con "Inr" [string_of_expr e] 
     | Lambda(x, e)     -> mk_con "Lambda" [x; string_of_expr e]
+    | PairLambda(x, y, e) -> mk_con "PairLambda" [x; mk_con "" [y; string_of_expr e]]
     | App(e1, e2)      -> mk_con "App" [string_of_expr e1; string_of_expr e2]
     | Seq el           -> mk_con "Seq" [string_of_expr_list el] 
     | While (e1, e2)   -> mk_con "While" [string_of_expr e1; string_of_expr e2]
@@ -164,6 +174,8 @@ let rec string_of_expr = function
     | Assign (e1, e2)  -> mk_con "Assign" [string_of_expr e1; string_of_expr e2]
     | LetFun(f, (x, e1), e2)      -> 
           mk_con "LetFun" [f; mk_con "" [x; string_of_expr e1]; string_of_expr e2]
+    |LetFunPair(f, (x, y, e1), e2)  ->
+          mk_con "LetFunPair" [f; mk_con "" [x; mk_con "" [y; string_of_expr e1]]; string_of_expr e2]
     | LetRecFun(f, (x, e1), e2)   -> 
           mk_con "LetRecFun" [f; mk_con "" [x; string_of_expr e1]; string_of_expr e2]
     | Case(e, (x1, e1), (x2, e2)) -> 
